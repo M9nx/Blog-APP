@@ -10,14 +10,18 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  
+  // Check if we have a token in localStorage (even if not validated yet)
+  const hasStoredToken = !!localStorage.getItem('auth_token');
 
   if (isLoading) {
-    return <LoadingPage message="Checking authentication..." />;
+    return <LoadingPage message="Loading..." />;
   }
 
-  if (!isAuthenticated) {
-    // Redirect to login page with return url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Only redirect if definitely not authenticated AND no token in storage
+  if (!isAuthenticated && !hasStoredToken) {
+    // Go to home page instead of login
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

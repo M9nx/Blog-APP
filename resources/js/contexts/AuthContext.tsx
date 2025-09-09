@@ -32,34 +32,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (storedToken && storedUser) {
         try {
+          // Set token and user immediately to prevent flashing of login page
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
           
-          // Verify token is still valid with the server
-          const response = await fetch('/api/user', {
+          // Silently verify token in background - don't logout if it fails
+          fetch('/api/user', {
             headers: {
               'Authorization': `Bearer ${storedToken}`,
               'Accept': 'application/json',
             }
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Invalid token');
+          }).then(userData => {
+            // Update user data if needed
+            setUser(prevUser => ({
+              ...prevUser,
+              ...userData
+            }));
+          }).catch(error => {
+            // Just log the error, but don't logout - this prevents disruptions
+            console.log('Auth refresh error:', error);
           });
-          
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-          } else {
-            // Token invalid, log out
-            console.log('Auth token invalid, logging out');
-            setToken(null);
-            setUser(null);
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-          }
         } catch (error) {
           console.error('Auth initialization failed:', error);
-          logout();
+          // Don't logout - just keep what we have in localStorage
         }
       }
       
+      // Always finish loading quickly
       setIsLoading(false);
     };
 
