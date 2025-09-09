@@ -27,6 +27,7 @@ export const SettingsPage: React.FC = () => {
     setMessage('');
 
     try {
+      console.log('Sending profile update:', formData);
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
@@ -36,6 +37,10 @@ export const SettingsPage: React.FC = () => {
         },
         body: JSON.stringify(formData),
       });
+
+      console.log('Response status:', response.status);
+      const result = await response.json();
+      console.log('Response data:', result);
 
       if (response.ok) {
         const result = await response.json();
@@ -47,7 +52,13 @@ export const SettingsPage: React.FC = () => {
         }
       } else {
         const error = await response.json();
-        setMessage(error.message || 'Failed to update profile');
+        // Handle validation errors properly
+        if (response.status === 422 && error.errors) {
+          const errorMessages = Object.values(error.errors).flat().join(', ');
+          setMessage(`Validation error: ${errorMessages}`);
+        } else {
+          setMessage(error.message || 'Failed to update profile');
+        }
       }
     } catch (err) {
       console.error('Profile update error:', err);

@@ -261,4 +261,60 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function updateAvatar(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // max 5MB
+            ]);
+
+            if ($request->hasFile('avatar')) {
+                $file = $request->file('avatar');
+                
+                // Delete old avatar if exists
+                if ($user->avatar && file_exists(public_path($user->avatar))) {
+                    unlink(public_path($user->avatar));
+                }
+                
+                // Store new avatar
+                $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('avatars', $filename, 'public');
+                
+                // Update user avatar path
+                $user->update([
+                    'avatar' => '/storage/' . $path
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Avatar updated successfully',
+                    'data' => [
+                        'avatar' => $user->avatar
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No file uploaded'
+            ], 400);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating avatar',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
