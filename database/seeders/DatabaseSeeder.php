@@ -16,15 +16,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create test users
+        // Create test users with proper bio data
         $testUser = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'bio' => 'I am a passionate developer who loves to write about technology and share knowledge with the community.',
+            'avatar' => null,
         ]);
 
         $johnDoe = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
+            'bio' => 'Full-stack developer with expertise in Laravel, React, and modern web technologies.',
+            'avatar' => null,
         ]);
 
         // Create some sample posts
