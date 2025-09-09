@@ -25,7 +25,7 @@ class UserController extends Controller
             // Load relationships only if user exists
             $user->load([
                 'posts' => function ($query) {
-                    $query->latest();
+                    $query->where('status', 'published')->latest();
                 },
                 'followers',
                 'following'
@@ -102,25 +102,26 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            $posts = $user->posts()->latest()->get();
+            // Only get published posts with pagination
+            $posts = $user->posts()
+                ->where('status', 'published')
+                ->latest()
+                ->paginate(10);
 
-            // Safely transform posts
-            $transformedPosts = $posts->map(function ($post) {
+            // Transform the paginated posts
+            $transformedPosts = $posts->getCollection()->map(function ($post) use ($user) {
                 try {
                     return [
                         'id' => $post->id,
                         'title' => $post->title,
                         'slug' => $post->slug,
                         'excerpt' => $post->excerpt,
-                        'content' => $post->content,
-                        'featured_image' => $post->featured_image,
-                        'status' => $post->status,
-                        'created_at' => $post->created_at,
-                        'updated_at' => $post->updated_at,
-                        'user_id' => $post->user_id,
-                        'likes_count' => $post->likes_count ?? 0,
+                        'user' => [
+                            'id' => $post->user_id,
+                            'name' => $user->name,
+                        ],
                         'comments_count' => $post->comments_count ?? 0,
-                        'is_liked' => Auth::check() ? $post->is_liked : false,
+                        'likes_count' => $post->likes_count ?? 0,
                     ];
                 } catch (\Exception $e) {
                     return [
@@ -128,25 +129,28 @@ class UserController extends Controller
                         'title' => $post->title,
                         'slug' => $post->slug,
                         'excerpt' => $post->excerpt,
-                        'content' => $post->content,
-                        'featured_image' => $post->featured_image,
-                        'status' => $post->status,
-                        'created_at' => $post->created_at,
-                        'updated_at' => $post->updated_at,
-                        'user_id' => $post->user_id,
-                        'likes_count' => 0,
+                        'user' => [
+                            'id' => $post->user_id,
+                            'name' => $user->name,
+                        ],
                         'comments_count' => 0,
-                        'is_liked' => false,
+                        'likes_count' => 0,
                     ];
                 }
             });
 
-            return response()->json($transformedPosts);
+            // Replace the collection with transformed posts
+            $posts->setCollection($transformedPosts);
+
+            return response()->json([
+                'success' => true,
+                'data' => $posts
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error retrieving user posts',
-                'error' => $e->getMessage()
-            ], 500);
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
         }
     }
 

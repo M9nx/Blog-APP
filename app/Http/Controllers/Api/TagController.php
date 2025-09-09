@@ -40,9 +40,15 @@ class TagController extends Controller
 
     public function show(Tag $tag): JsonResponse
     {
+        // Load the tag with its published posts and their relationships
+        $tag->load(['posts' => function ($query) {
+            $query->where('status', 'published')
+                  ->with(['user:id,name', 'tags:id,name,slug']);
+        }]);
+
         return response()->json([
             'success' => true,
-            'data' => ['tag' => $tag]
+            'data' => $tag
         ]);
     }
 
@@ -53,11 +59,12 @@ class TagController extends Controller
         ]);
 
         $tag->name = $request->input('name');
+        $tag->slug = \Illuminate\Support\Str::slug($request->input('name'));
         $tag->save();
 
         return response()->json([
             'success' => true,
-            'data' => ['tag' => $tag]
+            'message' => 'Tag updated successfully.'
         ]);
     }
 
@@ -67,7 +74,7 @@ class TagController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tag deleted successfully'
+            'message' => 'Tag deleted successfully.'
         ]);
     }
 
@@ -90,7 +97,7 @@ class TagController extends Controller
         
         return response()->json([
             'success' => true,
-            'message' => 'Tag attached to post successfully'
+            'message' => 'Tag attached to post successfully.'
         ]);
     }
 
@@ -113,7 +120,7 @@ class TagController extends Controller
         
         return response()->json([
             'success' => true,
-            'message' => 'Tag detached from post successfully'
+            'message' => 'Tag detached from post successfully.'
         ]);
     }
 }

@@ -7,9 +7,18 @@ use App\Models\User;
 
 // Use the TestCase class which should provide Laravel's testing features
 test('can make api requests', function () {
-    // Make a request to an API endpoint
-    $response = Http::get('http://localhost:8000/api/users/1');
+    // Create a user for the test
+    $user = User::factory()->create();
+    
+    // Use Laravel's testing client instead of external HTTP call
+    $response = $this->getJson("/api/users/{$user->id}");
     
     // Assert the response
-    expect($response->status())->toBe(200);
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'success',
+            'data' => [
+                'id', 'name', 'email'
+            ]
+        ]);
 });
