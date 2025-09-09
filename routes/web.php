@@ -31,11 +31,17 @@ Route::middleware('auth')->get('/dashboard', function () {
 // Include auth routes
 require __DIR__.'/auth.php';
 
-// Include settings routes - Restored for tests that depend on named routes
-require __DIR__.'/settings.php';
+// Handle settings routes explicitly to prevent redirect loops
+Route::get('/settings', function () {
+    return view('react-app');
+});
+
+Route::get('/settings/{any}', function () {
+    return view('react-app');
+})->where('any', '.*');
 
 // Main application route - serves the React SPA
-// Settings route is now handled by React Router, but keep Laravel routes for tests
+// This route handles all other React routes
 Route::get('/{any?}', function () {
     return view('react-app');
-})->where('any', '(?!dashboard).*')->name('home');
+})->where('any', '(?!dashboard|settings).*')->name('home');

@@ -81,9 +81,17 @@ const AppContent: React.FC = () => {
                 } 
               />
               
-              {/* Settings Routes - Direct React Settings Page */}
+              {/* Settings Routes - Handle both exact /settings and nested routes */}
               <Route 
                 path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/settings/*" 
                 element={
                   <ProtectedRoute>
                     <SettingsPage />

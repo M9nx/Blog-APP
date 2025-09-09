@@ -32,7 +32,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: Home, label: 'Home', path: '/', show: true },
     { icon: BookOpen, label: 'Library', path: '/library', show: isAuthenticated },
-    { icon: User, label: 'Profile', path: user ? `/profile/${user.id}` : '/profile', show: isAuthenticated },
     { icon: FileText, label: 'Stories', path: '/stories', show: isAuthenticated },
     { icon: BarChart3, label: 'Stats', path: '/stats', show: isAuthenticated },
     { icon: Edit3, label: 'Write', path: '/posts/create', show: isAuthenticated },

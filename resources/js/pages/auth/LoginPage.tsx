@@ -41,6 +41,8 @@ export const LoginPage: React.FC = () => {
       
       if (response.success) {
         login(response.token, response.user);
+        
+        // Always navigate to home page after login
         navigate('/');
       } else {
         setErrors({ general: [response.message] });
