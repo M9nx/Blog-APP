@@ -16,6 +16,7 @@ import { LibraryPage } from './pages/LibraryPage';
 import { StoriesPage } from './pages/StoriesPage';
 import { StatsPage } from './pages/StatsPage';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 
 // CSS
 import '../css/app.css';
@@ -76,6 +77,16 @@ const AppContent: React.FC = () => {
                       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                       <p className="mt-2 text-gray-600">Welcome to your dashboard!</p>
                     </div>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Settings Routes - Direct React Settings Page */}
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
                   </ProtectedRoute>
                 } 
               />

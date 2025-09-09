@@ -221,4 +221,40 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'username' => 'sometimes|nullable|string|max:255|unique:users,username,' . $user->id,
+                'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
+                'bio' => 'sometimes|nullable|string|max:1000',
+            ]);
+
+            $user->update($request->only(['name', 'username', 'email', 'bio']));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $user
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating profile',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

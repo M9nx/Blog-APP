@@ -5,6 +5,9 @@ use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Note: These routes are for Inertia.js settings pages
+// The main React app uses /settings route which is handled in react-app.tsx
+// and uses API routes in api.php for actual functionality
 Route::middleware('auth')->group(function () {
     Route::redirect('settings', '/settings/profile');
 
