@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
             // First check if user exists
@@ -21,6 +21,9 @@ class UserController extends Controller
                     'message' => 'User not found'
                 ], 404);
             }
+
+            // Get authenticated user using Sanctum
+            $currentUser = $request->user('sanctum');
             
             // Load relationships only if user exists
             $user->load([
@@ -32,7 +35,7 @@ class UserController extends Controller
             ]);
 
             // Safely load posts without problematic appends if needed
-            $posts = $user->posts->map(function ($post) {
+            $posts = $user->posts->map(function ($post) use ($currentUser) {
                 try {
                     // Only include appends if we have proper auth context
                     return [
@@ -48,7 +51,7 @@ class UserController extends Controller
                         'user_id' => $post->user_id,
                         'likes_count' => $post->likes_count ?? 0,
                         'comments_count' => $post->comments_count ?? 0,
-                        'is_liked' => Auth::check() ? $post->is_liked : false,
+                        'is_liked' => $currentUser ? $post->is_liked : false,
                     ];
                 } catch (\Exception $e) {
                     // Fallback without is_liked if there's an error
@@ -84,8 +87,8 @@ class UserController extends Controller
                     'followers_count' => $user->followers->count(),
                     'following_count' => $user->following->count(),
                     'posts_count' => $posts->count(),
-                    'is_following' => Auth::check() && Auth::user()->following->contains($user->id),
-                    'is_own_profile' => Auth::check() && Auth::id() === $user->id,
+                    'is_following' => $currentUser && $currentUser->following->contains($user->id),
+                    'is_own_profile' => $currentUser && $currentUser->id === $user->id,
                     'posts' => $posts
                 ]
             ]);
@@ -184,10 +187,18 @@ class UserController extends Controller
     {
         try {
             $userToFollow = User::findOrFail($id);
-            $currentUser = Auth::user();
+            $currentUser = $request->user('sanctum');
+
+            if (!$currentUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
 
             if ($currentUser->id === $userToFollow->id) {
                 return response()->json([
+                    'success' => false,
                     'message' => 'You cannot follow yourself'
                 ], 400);
             }
@@ -197,10 +208,12 @@ class UserController extends Controller
             }
 
             return response()->json([
+                'success' => true,
                 'message' => 'User followed successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Error following user',
                 'error' => $e->getMessage()
             ], 500);
@@ -211,15 +224,24 @@ class UserController extends Controller
     {
         try {
             $userToUnfollow = User::findOrFail($id);
-            $currentUser = Auth::user();
+            $currentUser = $request->user('sanctum');
+
+            if (!$currentUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
 
             $currentUser->following()->detach($userToUnfollow->id);
 
             return response()->json([
+                'success' => true,
                 'message' => 'User unfollowed successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Error unfollowing user',
                 'error' => $e->getMessage()
             ], 500);
@@ -229,7 +251,14 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $request->user('sanctum');
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
 
             $request->validate([
                 'name' => 'sometimes|required|string|max:255',
@@ -265,7 +294,14 @@ class UserController extends Controller
     public function updateAvatar(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $request->user('sanctum');
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
 
             $request->validate([
                 'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // max 5MB

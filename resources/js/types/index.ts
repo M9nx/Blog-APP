@@ -37,5 +37,8 @@ export interface NavItem {
 }
 
 export interface SharedData {
+  auth?: {
+    user?: User;
+  };
   [key: string]: unknown;
 }

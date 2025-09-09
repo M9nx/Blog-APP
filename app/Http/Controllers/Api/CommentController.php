@@ -42,6 +42,15 @@ class CommentController extends Controller
      */
     public function store(Request $request, Post $post)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         $request->validate([
             'body' => 'required|string|max:1000',
             'parent_id' => 'nullable|exists:comments,id'
@@ -49,7 +58,7 @@ class CommentController extends Controller
 
         $comment = Comment::create([
             'body' => $request->body,
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'post_id' => $post->id,
             'parent_id' => $request->parent_id,
         ]);
@@ -70,13 +79,22 @@ class CommentController extends Controller
      */
     public function storeReply(Request $request, Comment $comment)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         $request->validate([
             'body' => 'required|string|max:1000',
         ]);
 
         $reply = Comment::create([
             'body' => $request->body,
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'post_id' => $comment->post_id,
             'parent_id' => $comment->id,
         ]);
@@ -97,7 +115,14 @@ class CommentController extends Controller
      */
     public function toggleLike(Request $request, Comment $comment)
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
         
         $existingLike = CommentLike::where('user_id', $user->id)
             ->where('comment_id', $comment->id)
@@ -136,8 +161,17 @@ class CommentController extends Controller
      */
     public function destroy(Request $request, Comment $comment)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         // Check if user can delete this comment
-        if ($comment->user_id !== $request->user()->id) {
+        if ($comment->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to delete this comment'

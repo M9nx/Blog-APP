@@ -14,7 +14,14 @@ class LikeController extends Controller
      */
     public function toggle(Request $request, Post $post)
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
         
         $existingLike = Like::where('user_id', $user->id)
             ->where('post_id', $post->id)

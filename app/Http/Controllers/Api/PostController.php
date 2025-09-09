@@ -51,6 +51,15 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -63,7 +72,7 @@ class PostController extends Controller
             'content' => $request->input('content'),
             'excerpt' => $request->input('excerpt'),
             'status' => $request->input('status'),
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'published_at' => $request->input('status') === 'published' ? now() : null,
         ]);
 
@@ -102,8 +111,17 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         // Check if user can update this post
-        if ($post->user_id !== $request->user()->id) {
+        if ($post->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to update this post'
@@ -144,8 +162,17 @@ class PostController extends Controller
      */
     public function destroy(Request $request, Post $post)
     {
+        $user = $request->user('sanctum');
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
         // Check if user can delete this post
-        if ($post->user_id !== $request->user()->id) {
+        if ($post->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to delete this post'
