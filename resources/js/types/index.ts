@@ -32,7 +32,7 @@ export interface NavItem {
   label: string;
   href: string | { url: string }; // Allow for route objects
   title?: string;
-  icon?: React.ComponentType | React.ReactNode;
+  icon?: React.ComponentType;
   url?: string;
 }
 

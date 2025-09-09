@@ -1,14 +1,15 @@
 // User types
 export interface User {
   id: number;
-  name: string;
+  name: string | null;
   email: string;
-  username?: string;
-  bio?: string;
-  avatar?: string;
-  email_verified_at: string | null;
+  username?: string | null;
+  bio?: string | null;
+  avatar?: string | null;
+  email_verified_at?: string | null;
   created_at: string;
   updated_at: string;
+  [key: string]: unknown; // This allows for additional properties
 }
 
 // Post types

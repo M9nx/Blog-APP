@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             >
               <div className="h-10 w-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-white">
-                  {user.name.charAt(0)}
+                  {user.name?.charAt(0) || 'U'}
                 </span>
               </div>
               <div className="flex-1">
