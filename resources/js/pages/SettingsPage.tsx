@@ -114,21 +114,25 @@ export const SettingsPage: React.FC = () => {
       console.log('Response data:', result);
 
       if (response.ok) {
-        const result = await response.json();
         if (result.success) {
-          updateUser(result.data);
+          // Check if user exists and update it
+          if (user && result.data) {
+            updateUser({
+              ...user,
+              ...result.data
+            });
+          }
           setMessage('Profile updated successfully!');
         } else {
           setMessage(result.message || 'Failed to update profile');
         }
       } else {
-        const error = await response.json();
         // Handle validation errors properly
-        if (response.status === 422 && error.errors) {
-          const errorMessages = Object.values(error.errors).flat().join(', ');
+        if (response.status === 422 && result.errors) {
+          const errorMessages = Object.values(result.errors).flat().join(', ');
           setMessage(`Validation error: ${errorMessages}`);
         } else {
-          setMessage(error.message || 'Failed to update profile');
+          setMessage(result.message || 'Failed to update profile');
         }
       }
     } catch (err) {
@@ -164,8 +168,9 @@ export const SettingsPage: React.FC = () => {
         }),
       });
 
+      const result = await response.json();
+      
       if (response.ok) {
-        const result = await response.json();
         if (result.success) {
           setMessage('Password updated successfully!');
           setPasswordData({
@@ -177,8 +182,12 @@ export const SettingsPage: React.FC = () => {
           setMessage(result.message || 'Failed to update password');
         }
       } else {
-        const error = await response.json();
-        setMessage(error.message || 'Failed to update password');
+        if (response.status === 422 && result.errors) {
+          const errorMessages = Object.values(result.errors).flat().join(', ');
+          setMessage(`Validation error: ${errorMessages}`);
+        } else {
+          setMessage(result.message || 'Failed to update password');
+        }
       }
     } catch (err) {
       console.error('Password update error:', err);

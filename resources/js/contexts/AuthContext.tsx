@@ -35,9 +35,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
           
-          // Optional: Verify token is still valid (comment out if causing issues)
-          // const response = await api.get('/user');
-          // setUser(response.data);
+          // Verify token is still valid with the server
+          const response = await fetch('/api/user', {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`,
+              'Accept': 'application/json',
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          } else {
+            // Token invalid, log out
+            console.log('Auth token invalid, logging out');
+            setToken(null);
+            setUser(null);
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+          }
         } catch (error) {
           console.error('Auth initialization failed:', error);
           logout();
