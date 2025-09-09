@@ -1,9 +1,6 @@
 <?php
 
-use Tests\TestCase;
 use App\Models\User;
-
-uses(TestCase::class);
 
 test('basic test', function () {
     // Create a user and act as that user
