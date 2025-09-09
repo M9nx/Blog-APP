@@ -1,0 +1,22 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/
+        - routes/
+
+    level: 5
+
+    ignoreErrors:
+        # Ignore false positive relationship warnings  
+        - "#Relation 'user' is not found in App\\\\Models\\\\Post model#"
+
+    excludePaths:
+        - ./vendor/*
+        - ./node_modules/*
+        - ./bootstrap/cache/*
+        - ./storage/*
+        - ./tests/*
