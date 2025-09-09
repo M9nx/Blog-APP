@@ -26,11 +26,11 @@ Route::middleware('auth')->get('/dashboard', function () {
 // Include auth routes
 require __DIR__.'/auth.php';
 
-// Include settings routes - COMMENTED OUT: Using React settings instead
-// require __DIR__.'/settings.php';
+// Include settings routes - Restored for tests that depend on named routes
+require __DIR__.'/settings.php';
 
 // Main application route - serves the React SPA
-// Settings route is now handled by React Router
+// Settings route is now handled by React Router, but keep Laravel routes for tests
 Route::get('/{any?}', function () {
     return view('react-app');
 })->where('any', '(?!dashboard).*')->name('home');

@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
 
         session()->regenerate();
 
-        return redirect()->intended(route('profile.edit', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
