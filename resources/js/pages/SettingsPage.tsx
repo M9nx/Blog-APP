@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Lock, Eye, Trash2 } from 'lucide-react';
+import { User, Lock, Eye, Trash2, Upload } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -11,6 +11,10 @@ export const SettingsPage: React.FC = () => {
     username: user?.username || '',
     bio: user?.bio || '',
   });
+  
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [passwordData, setPasswordData] = useState({
     current_password: '',
@@ -20,6 +24,73 @@ export const SettingsPage: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) {
+      setMessage('Please select an image file');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatarFile);
+
+      const response = await fetch('/api/user/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Update user avatar in auth context
+          if (user) {
+            updateUser({
+              ...user,
+              avatar: result.data.avatar
+            });
+          }
+          setMessage('Avatar updated successfully!');
+        } else {
+          setMessage(result.message || 'Failed to update avatar');
+        }
+      } else {
+        const error = await response.json();
+        if (response.status === 422 && error.errors) {
+          const errorMessages = Object.values(error.errors).flat().join(', ');
+          setMessage(`Validation error: ${errorMessages}`);
+        } else {
+          setMessage(error.message || 'Failed to update avatar');
+        }
+      }
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      setMessage('An error occurred while uploading your avatar');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +241,53 @@ export const SettingsPage: React.FC = () => {
               {activeTab === 'profile' && (
                 <div>
                   <h3 className="text-xl font-bold mb-6">Profile Information</h3>
+                  
+                  {/* Avatar Upload Section */}
+                  <div className="mb-8">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Profile Photo
+                    </label>
+                    <div className="flex items-center space-x-6">
+                      {avatarPreview ? (
+                        <div className="w-24 h-24 rounded-full overflow-hidden">
+                          <img
+                            src={avatarPreview}
+                            alt="Avatar preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-xl">
+                            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-col space-y-2">
+                        <label className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+                          Select New Photo
+                          <input
+                            type="file"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleAvatarChange}
+                            accept="image/*"
+                          />
+                        </label>
+                        
+                        <button 
+                          type="button"
+                          onClick={handleAvatarUpload}
+                          disabled={!avatarFile || isLoading}
+                          className="py-2 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isLoading ? 'Uploading...' : 'Upload Avatar'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-gray-700">
