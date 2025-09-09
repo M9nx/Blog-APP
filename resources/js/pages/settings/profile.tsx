@@ -39,7 +39,7 @@ export default function Profile({ user }: Props) {
   };
 
   return (
-    <Layout user={user}>
+    <Layout>
       <Head title="Profile Settings" />
 
       <h2 className="text-xl font-bold mb-6">Profile Information</h2>

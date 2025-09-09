@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Standard Laravel + React welcome page
+Route::get('/welcome', function () {
+    return view('welcome');
+});
+
 // Test route for the React issue using CDN
 Route::get('/test-react', function () {
     return view('test-react');

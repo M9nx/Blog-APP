@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface User {
   id: number;
   name: string | null;
@@ -18,3 +20,22 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 };
 
 export type Appearance = 'light' | 'dark' | 'system';
+
+// Additional types for navigation and breadcrumbs
+export interface BreadcrumbItem {
+  label: string;
+  href: string;
+  title?: string;
+}
+
+export interface NavItem {
+  label: string;
+  href: string | { url: string }; // Allow for route objects
+  title?: string;
+  icon?: React.ComponentType | React.ReactNode;
+  url?: string;
+}
+
+export interface SharedData {
+  [key: string]: unknown;
+}

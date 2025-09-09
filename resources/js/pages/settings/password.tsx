@@ -25,7 +25,7 @@ export default function Password({ user }: Props) {
   };
 
   return (
-    <Layout user={user}>
+    <Layout>
       <Head title="Password Settings" />
 
       <h2 className="text-xl font-bold mb-6">Update Password</h2>

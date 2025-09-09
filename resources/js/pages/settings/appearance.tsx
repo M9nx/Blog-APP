@@ -21,7 +21,7 @@ export default function Appearance({ user }: Props) {
   };
 
   return (
-    <Layout user={user}>
+    <Layout>
       <Head title="Appearance Settings" />
 
       <h2 className="text-xl font-bold mb-6">Appearance</h2>

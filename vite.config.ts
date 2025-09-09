@@ -10,6 +10,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css', 
                 'resources/js/app.tsx',
+                'resources/js/app.jsx',
                 'resources/js/react-app.tsx',
                 'resources/js/test-app.jsx',
                 // 'resources/js/debug.js', // Removed debug script
@@ -20,6 +21,7 @@ export default defineConfig({
             refresh: true,
         }),
         react({
+            jsxRuntime: 'automatic',
             babel: {
                 plugins: [],
                 babelrc: false,

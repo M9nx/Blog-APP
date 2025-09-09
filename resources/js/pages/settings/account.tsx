@@ -28,7 +28,7 @@ export default function Account({ user }: Props) {
   };
 
   return (
-    <Layout user={user}>
+    <Layout>
       <Head title="Account Settings" />
 
       <div className="space-y-12">
