@@ -2,11 +2,10 @@ import { Link } from '@inertiajs/react';
 
 // Using a more flexible type for the user prop
 interface LayoutProps {
-  user?: Record<string, unknown>;
   children: React.ReactNode;
 }
 
-export default function Layout({ user, children }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
   const navigation = [
     { name: 'Profile Information', href: '/settings/profile' },
     { name: 'Password', href: '/settings/password' },
